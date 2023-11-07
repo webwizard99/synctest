@@ -1,0 +1,36 @@
+/*RoboPig is a simple dice game in which points are then used for a second game stage, a simple rpg-style battle between RoboPigs*/
+
+/*Basic Pig assets(layout of player frames) from Udemy JavaScript course. All pig image assets, energy bar assets, scripting, and styling of RoboPigs, RoboPig Store, and RoboPig battle are the production of Bezlonir aka Michael Bragg*/
+
+/**********************************************
+*** GENERAL
+**********************************************/
+
+* {
+    margin: 0;
+    padding: 0;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+    font-family:'Francois One', sans-serif;
+    user-select: none;
+    -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+    -moz-user-select: none; /* mozilla browsers */
+    -khtml-user-select: none; /* webkit (konqueror) browsers */
+    -ms-user-select: none; /* IE10+ */
+}
+
+.battle-text {
+  padding:.2rem;
+  height: 20rem;
+  width: 16rem;
+  max-width:100%;
+  background-color:rgba(20,30,20,.95);
+  color:rgba(220,220,225,.95);
+  border:solid 1px rgba(220,230,220,1);
+  font-family:'Alegrey', serif;
+  font-size:.9rem;
+  word-wrap:break-word;
+  line-height:1.1rem;
+  overflow-y:scroll;
+  overflow-x:hidden;
+}
