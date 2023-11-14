@@ -1,41 +1,5 @@
-import adventurers from '../../../vendor/src/game_modules/adventurers';
-import Battle from './battle';
-
-// const Phase = function(payload) {
-//     const {currentFunction, nextFunction} = payload;
-//     this.currentFunction = currentFunction;
-//     this.nextFunction = nextFunction;
-// }
-
-class AsyncLock {
-    constructor () {
-      this.disable = () => {}
-      this.promise = Promise.resolve()
-    }
-  
-    enable () {
-      this.promise = new Promise(resolve => this.disable = resolve)
-    }
-  }
-  
-//   /*
-//     EXAMPLE USAGE:
-//   */
-  
-//   // Create a new lock
-//   const lock = new AsyncLock()
-  
-//   // Enable it
-//   lock.enable()
-  
-//   // Make an async function that...
-//   async function test () {
-//     // Waits for the lock to be disabled
-//     await lock.promise
-  
-//     // Then writes to STDOUT
-//     console.log('Test')
-//   }
+import Battle from './battle.js';
+import TaskController from './taskController.js';
 
 const Adventurer = function(payload) {
     const { name,
@@ -60,7 +24,7 @@ Adventurer.prototype.takeDamage = function(payload) {
     if (this.hp <= 0) {
         this.hp = 0;
         this.alive = false;
-        Battle.addText(`${this.name} has died.`)
+        Battle.addEmphasisText(`${this.name} has died.`)
     }
 }
 
@@ -80,7 +44,7 @@ let Adventurer3 = new Adventurer({
     attack: 8,
     defense: 2 });
 
-const Adventurers = [Adventurer1, Adventurer2, Adventurer3];
+const adventurers = [Adventurer1, Adventurer2, Adventurer3];
 
 const Monster = function(payload) {
     const {
@@ -109,7 +73,7 @@ Monster.prototype.takeDamage = function(payload) {
     if (this.hp <= 0) {
         this.hp = 0;
         this.alive = false;
-        Battle.addText(`${this.name} has died.`)
+        Battle.addEmphasisText(`${this.name} has died.`)
     }
 }
 
@@ -137,23 +101,31 @@ const monster4 = new Monster({
     attack: 5,
     defense: 3
 });
+
 const monsters = [monster1, monster2, monster3, monster4];
 
 const lock = new AsyncLock();
 
 async function doBattles() {
-    await lock.promise;
-    lock.enable();
+    const battleControllerID = TaskController.createController();
+    const battleTaskID = TaskController.addTask(battleControllerID);
+    const fightRounds = 3
 
-    adventurers.foreach(adventurer => {
-        for (let fight = 0; fight < 3; fight++) {
-            const monster = Object.assign(monster[Math.round(Math.random() * monsters.length)]);
-            Battle.performBattle(adventurer, monster);
+    for (let combatant = 0; combatant < adventurers.length; combatant++) {
+        for (let fight = 0; fight < fightRounds; fight++) {
+            let adventurer = adventurers[combatant];
+            const monster = Object.assign(monsters[Math.round(Math.random() * (monsters.length - 1))]);
+
+            if (adventurer.alive) Battle.performBattle(adventurer, monster, {battleControllerId: battleControllerID });
+            
         }
-    });
+    }
 
-    lock.disable();
-
+    const DOMReference = TaskController.getDOMReference();
+    const battleTaskDOMID = `#${DOMReference.taskControllerTemplate}${battleControllerID}
+    ${DOMReference.task}${battleTaskID}`;
+    const battleTask = document.querySelector(battleTaskDOMID);
+    battleTask.remove();
 }
 
 doBattles()
