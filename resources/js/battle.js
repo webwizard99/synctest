@@ -1,4 +1,4 @@
-import TaskController from "./taskController";
+import TaskController from "./taskController.js";
 
 const Battle = (function(){
     const textBox = document.querySelector('.battle-text');

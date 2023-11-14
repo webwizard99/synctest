@@ -1,4 +1,4 @@
-import AsyncLock from "./AsycLock";
+import AsyncLock from "./AsyncLock.js";
 
 const TaskController = (function() {
 
