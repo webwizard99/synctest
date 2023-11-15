@@ -2,7 +2,7 @@ import AsyncLock from "./AsyncLock.js";
 
 const TaskController = (function() {
 
-    const taskControllers = [];
+    let taskControllers = [];
 
     const initialID = 1;
     let currentIndex = initialID;
@@ -24,6 +24,24 @@ const TaskController = (function() {
         this.taskIndex = 1;
     }
 
+    TaskControllerLocal.prototype.delete = async function() {
+        const taskDiv = document.querySelector(`#${DOMReference.taskControllerTemplate}${this.controllerId}`);
+        taskMaster.removeChild(taskDiv);
+        taskControllers = taskControllers.filter(controller => controller.controllerId !== this.controllerId);
+        this.lock.disable();
+    }
+
+    TaskControllerLocal.prototype.checkTasks = function() {
+        const controllerDiv = document.querySelector(`#${DOMReference.taskControllerTemplate}${this.controllerId}`);
+        if (controllerDiv) {
+            const children = controllerDiv.childElementCount;
+            if (children === 0) {
+                this.delete();
+            }
+        }
+        
+    }
+
     TaskControllerLocal.prototype.init = async function() {
         const newDiv = document.createElement("div");
         newDiv.setAttribute("id", `${DOMReference.taskControllerTemplate}${this.controllerId}`)
@@ -39,42 +57,29 @@ const TaskController = (function() {
         };
 
         // Create an observer instance linked to the callback function
-        const observer = new MutationObserver(callback);
+        const observer = new MutationObserver(callback.bind(this));
 
         // Start observing the target node for configured mutations
         observer.observe(newDiv, mutationConfig);
         this.lock = new AsyncLock();
-        await lock.promise;
-        lock.enable();
+        await this.lock.promise;
+        this.lock.enable();
     }
 
-    TaskControllerLocal.prototype.checkTasks = function() {
-        const controllerDiv = document.querySelector(`#${DOMReference.taskControllerTemplate}${this.controllerId}`);
-        const children = controllerDiv.childElementCount;
-        if (children === 0) {
-            this.delete();
-        }
-    }
+    
 
     TaskControllerLocal.prototype.addTask = function() {
         const localContainer = document.querySelector(`#${DOMReference.taskControllerTemplate}${this.controllerId}`);
         const taskID = this.taskIndex;
         const newDiv = document.createElement("div");
         newDiv.setAttribute("id", 
-            `${DOMReference.taskControllerTemplate}${this.controllerId}
-            ${DOMReference.task}${taskID}`);
+            `${DOMReference.taskControllerTemplate}${this.controllerId}${DOMReference.task}${taskID}`);
         localContainer.appendChild(newDiv);
         this.taskIndex++;
         return taskID;
     }
 
-    TaskControllerLocal.prototype.delete = async function() {
-        const taskDiv = document.querySelector(`#${DOMReference.taskControllerTemplate}${this.controllerId}`);
-        taskMaster.removeChild(taskDiv);
-        taskControllers = taskControllers.filter(controller => controller.controllerId !== this.controllerId);
-        this.lock.disable();
-        this = null;
-    }
+    
 
     return {
         createController: function() {
@@ -92,17 +97,29 @@ const TaskController = (function() {
                 console.log('Failed attempt to GET controller');
             }
         },
-        addTask: function(controllerID) {
-            const targetController = taskControllers.find(controller => controller.controllerID === controllerID);
+        addTask: function(controllerId) {
+            const targetController = taskControllers.find(controller => controller.controllerId === controllerId);
             if (targetController) {
                 const returnID = targetController.addTask();
                 return returnID;
             } else {
                 console.log('Attempted to add task too controller with invalid controller id.');
+                return false;
             }
         },
         getDOMReference: function() {
             return DOMReference;
+        },
+        deleteTask: function(payload) {
+            const { controllerId, taskId } = payload;
+            const taskDOMID = `#${DOMReference.taskControllerTemplate}${controllerId}${DOMReference.task}${taskId}`;
+            const task = document.querySelector(taskDOMID);
+            if (task) {
+                task.remove();
+            } else {
+                console.log('Tried to remove task that could not be found.');
+            }
+            
         }
     }
 })();

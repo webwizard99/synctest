@@ -4,9 +4,9 @@ const Battle = (function(){
     const textBox = document.querySelector('.battle-text');
     let textCount = 0;
 
-    Battle.combatRound = function(adventurer, monster) {
+    const combatRound = function(adventurer, monster, payload) {
         const { battleControllerId } = payload;
-        const roundTaskID = TaskController.addTask(battleControllerID);
+        const roundTaskID = TaskController.addTask(battleControllerId);
         const actors = [];
         if (Math.random() > .4) {
             actors.push(adventurer);
@@ -29,11 +29,8 @@ const Battle = (function(){
             actors[0].takeDamage({val: damage2, attacker: actors[1].name});
         }
 
-        const DOMReference = TaskController.getDOMReference();
-        const roundTaskDOMID = `#${DOMReference.taskControllerTemplate}${battleControllerId}
-        ${DOMReference.task}${roundTaskID}`;
-        const roundTask = document.querySelector(roundTaskDOMID);
-        roundTask.remove();
+        TaskController.deleteTask({controllerId: battleControllerId, taskId: roundTaskID})
+        
         return;
     }
 
@@ -46,7 +43,7 @@ const Battle = (function(){
             // if (Battle.textCount > 30) {
             //   Battle.textBox.removeChild(Battle.textBox.childNodes[0]);
             // }
-            textBox.scrollTop = Battle.textBox.scrollHeight - Battle.textBox.clientHeight;
+            textBox.scrollTop = textBox.scrollHeight - textBox.clientHeight;
         },
         // Add text to info box in battle mode
         addEmphasisText: function(textToAdd) {
@@ -56,20 +53,15 @@ const Battle = (function(){
             // if (Battle.textCount > 30) {
             //   Battle.textBox.removeChild(Battle.textBox.childNodes[0]);
             // }
-            textBox.scrollTop = Battle.textBox.scrollHeight - Battle.textBox.clientHeight;
+            textBox.scrollTop = textBox.scrollHeight - textBox.clientHeight;
         },
         performBattle: function(adventurer, monster, payload) {
             const { battleControllerId } = payload;
-            const battleTaskID = TaskController.addTask(battleControllerID);
+            const battleTaskID = TaskController.addTask(battleControllerId);
             while (adventurer.alive && monster.alive) {
                 combatRound(adventurer, monster, { battleControllerId: battleControllerId });
             }
-
-            const DOMReference = TaskController.getDOMReference();
-            const battleTaskDOMID = `#${DOMReference.taskControllerTemplate}${battleControllerId}
-            ${DOMReference.task}${battleTaskID}`;
-            const battleTask = document.querySelector(battleTaskDOMID);
-            battleTask.remove();
+            TaskController.deleteTask({controllerId: battleControllerId, taskId: battleTaskID});
             return;
         }
     }

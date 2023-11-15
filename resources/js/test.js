@@ -24,23 +24,23 @@ Adventurer.prototype.takeDamage = function(payload) {
     if (this.hp <= 0) {
         this.hp = 0;
         this.alive = false;
-        Battle.addEmphasisText(`${this.name} has died.`)
+        Battle.addEmphasisText(`${this.name} was killed by ${attacker}.`)
     }
 }
 
 let Adventurer1 = new Adventurer({ 
     name: "Marcus",
-    hp: 22,
+    hp: 42,
     attack: 6,
     defense: 4 });
 let Adventurer2 = new Adventurer({ 
     name: "Zembold",
-    hp: 18,
+    hp: 38,
     attack: 4,
     defense: 6 });
 let Adventurer3 = new Adventurer({ 
     name: "Sharvus",
-    hp: 26,
+    hp: 46,
     attack: 8,
     defense: 2 });
 
@@ -73,59 +73,53 @@ Monster.prototype.takeDamage = function(payload) {
     if (this.hp <= 0) {
         this.hp = 0;
         this.alive = false;
-        Battle.addEmphasisText(`${this.name} has died.`)
+        Battle.addEmphasisText(`${this.name} was killed by ${attacker}.`)
     }
 }
 
-const monster1 = new Monster({
+const monster1 = {
     name: "Slime",
     hp: 8,
     attack: 3,
     defense: 2
-});
-const monster2 = new Monster({
+};
+const monster2 = {
     name: "Kobold",
     hp: 10,
     attack: 4,
     defense: 3
-});
-const monster3 = new Monster({
+};
+const monster3 = {
     name: "Ogre",
     hp: 14,
     attack: 6,
     defense: 4
-});
-const monster4 = new Monster({
+};
+const monster4 = {
     name: "Orc",
     hp: 12,
     attack: 5,
     defense: 3
-});
+};
 
 const monsters = [monster1, monster2, monster3, monster4];
-
-const lock = new AsyncLock();
 
 async function doBattles() {
     const battleControllerID = TaskController.createController();
     const battleTaskID = TaskController.addTask(battleControllerID);
-    const fightRounds = 3
+    const fightRounds = 8;
 
     for (let combatant = 0; combatant < adventurers.length; combatant++) {
         for (let fight = 0; fight < fightRounds; fight++) {
             let adventurer = adventurers[combatant];
-            const monster = Object.assign(monsters[Math.round(Math.random() * (monsters.length - 1))]);
+            const monster = new Monster(monsters[Math.round(Math.random() * (monsters.length - 1))]);
 
-            if (adventurer.alive) Battle.performBattle(adventurer, monster, {battleControllerId: battleControllerID });
-            
+            if (adventurer.alive) {
+                Battle.performBattle(adventurer, monster, {battleControllerId: battleControllerID });
+            }
         }
     }
-
-    const DOMReference = TaskController.getDOMReference();
-    const battleTaskDOMID = `#${DOMReference.taskControllerTemplate}${battleControllerID}
-    ${DOMReference.task}${battleTaskID}`;
-    const battleTask = document.querySelector(battleTaskDOMID);
-    battleTask.remove();
+    TaskController.deleteTask({controllerId: battleControllerID, taskId: battleTaskID});
 }
 
 doBattles()
